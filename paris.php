@@ -156,7 +156,7 @@
          * instance to communicate with the database.
          */
         public $orm;
-
+        
         /**
          * Retrieve the value of a static property on a class. If the
          * class or the property does not exist, returns the default
@@ -392,5 +392,31 @@
          */
         public function hydrate($data) {
             $this->orm->hydrate($data)->force_all_dirty();
+        }
+        
+        /**
+         * Returns an ORM instance for the table attached to the model. Because
+         * of the need for late static binding this only works for PHP >= 5.3. 
+         * For PHP < 5.3 the following must be placed in each of the subclassing 
+         * models:
+         * 
+         *     public static function objects() { 
+         *         return parent::objects(__CLASS__); 
+         *     }
+         * 
+         * @param type $class_name
+         * @return type ORM
+         */
+        public static function objects($class_name=null) {
+            $has_late_static_binding = function_exists('get_called_class');
+            if (!$has_late_static_binding && is_null($class_name)) {
+                throw Exception('PHP versions < 5.3 must override the objects'
+                                . 'method.');
+            }
+            if ($has_late_static_binding && is_null($class_name)) {
+                $class_name = get_called_class();
+            }
+            $table_name = Model::_get_table_name($class_name);
+            return ORM::for_table($table_name);
         }
     }
