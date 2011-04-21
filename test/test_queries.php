@@ -23,7 +23,7 @@
     class Simple extends Model {
     }
 
-    Model::factory('Simple')->find_many();
+    Model::factory('Simple')->find_all();
     $expected = 'SELECT * FROM `simple`';
     Tester::check_equal("Simple auto table name", $expected);
 
@@ -31,7 +31,7 @@
     class ComplexModelClassName extends Model {
     }
 
-    Model::factory('ComplexModelClassName')->find_many();
+    Model::factory('ComplexModelClassName')->find_all();
     $expected = 'SELECT * FROM `complex_model_class_name`';
     Tester::check_equal("Complex auto table name", $expected);
 
@@ -39,7 +39,7 @@
         public static $_table = 'custom_table';
     }
 
-    Model::factory('ModelWithCustomTable')->find_many();
+    Model::factory('ModelWithCustomTable')->find_all();
     $expected = 'SELECT * FROM `custom_table`';
     Tester::check_equal("Custom table name", $expected);
 
@@ -48,7 +48,7 @@
         public static $_id_column = 'custom_id_column';
     }
 
-    Model::factory('ModelWithCustomTableAndCustomIdColumn')->find_one(5);
+    Model::factory('ModelWithCustomTableAndCustomIdColumn')->find_first(5);
     $expected = "SELECT * FROM `custom_table` WHERE `custom_id_column` = '5' LIMIT 1";
     Tester::check_equal("Custom ID column", $expected);
 
@@ -63,11 +63,11 @@
         }
     }
 
-    Model::factory('ModelWithFilters')->filter('name_is_fred')->find_many();
+    Model::factory('ModelWithFilters')->filter('name_is_fred')->find_all();
     $expected = "SELECT * FROM `model_with_filters` WHERE `name` = 'Fred'";
     Tester::check_equal("Filter with no arguments", $expected);
 
-    Model::factory('ModelWithFilters')->filter('name_is', 'Bob')->find_many();
+    Model::factory('ModelWithFilters')->filter('name_is', 'Bob')->find_all();
     $expected = "SELECT * FROM `model_with_filters` WHERE `name` = 'Bob'";
     Tester::check_equal("Filter with arguments", $expected);
 
@@ -81,14 +81,14 @@
     $expected = "INSERT INTO `widget` (`name`, `age`) VALUES ('Fred', '10')";
     Tester::check_equal("Insert data", $expected);
 
-    $widget = Model::factory('Widget')->find_one(1);
+    $widget = Model::factory('Widget')->find_first(1);
     $widget->name = "Fred";
     $widget->age = 10;
     $widget->save();
     $expected = "UPDATE `widget` SET `name` = 'Fred', `age` = '10' WHERE `id` = '1'";
     Tester::check_equal("Update data", $expected);
 
-    $widget = Model::factory('Widget')->find_one(1);
+    $widget = Model::factory('Widget')->find_first(1);
     $widget->delete();
     $expected = "DELETE FROM `widget` WHERE `id` = '1'";
     Tester::check_equal("Delete data", $expected);
@@ -105,8 +105,8 @@
         }
     }
 
-    $user = Model::factory('User')->find_one(1);
-    $profile = $user->profile()->find_one();
+    $user = Model::factory('User')->find_first(1);
+    $profile = $user->profile()->find_first();
     $expected = "SELECT * FROM `profile` WHERE `user_id` = '1' LIMIT 1";
     Tester::check_equal("has_one relation", $expected);
 
@@ -116,13 +116,13 @@
         }
     }
 
-    $user2 = Model::factory('UserTwo')->find_one(1);
-    $profile = $user2->profile()->find_one();
+    $user2 = Model::factory('UserTwo')->find_first(1);
+    $profile = $user2->profile()->find_first();
     $expected = "SELECT * FROM `profile` WHERE `my_custom_fk_column` = '1' LIMIT 1";
     Tester::check_equal("has_one relation with custom FK name", $expected);
 
     $profile->user_id = 1;
-    $user3 = $profile->user()->find_one();
+    $user3 = $profile->user()->find_first();
     $expected = "SELECT * FROM `user` WHERE `id` = '1' LIMIT 1";
     Tester::check_equal("belongs_to relation", $expected);
 
@@ -131,9 +131,9 @@
             return $this->belongs_to('User', 'custom_user_fk_column');
         }
     }
-    $profile2 = Model::factory('ProfileTwo')->find_one(1);
+    $profile2 = Model::factory('ProfileTwo')->find_first(1);
     $profile2->custom_user_fk_column = 5;
-    $user4 = $profile2->user()->find_one();
+    $user4 = $profile2->user()->find_first();
     $expected = "SELECT * FROM `user` WHERE `id` = '5' LIMIT 1";
     Tester::check_equal("belongs_to relation with custom FK name", $expected);
 
@@ -146,8 +146,8 @@
         }
     }
 
-    $user4 = Model::factory('UserThree')->find_one(1);
-    $posts = $user4->posts()->find_many();
+    $user4 = Model::factory('UserThree')->find_first(1);
+    $posts = $user4->posts()->find_all();
     $expected = "SELECT * FROM `post` WHERE `user_three_id` = '1'";
     Tester::check_equal("has_many relation", $expected);
 
@@ -156,8 +156,8 @@
             return $this->has_many('Post', 'my_custom_fk_column');
         }
     }
-    $user5 = Model::factory('UserFour')->find_one(1);
-    $posts = $user5->posts()->find_many();
+    $user5 = Model::factory('UserFour')->find_first(1);
+    $posts = $user5->posts()->find_all();
     $expected = "SELECT * FROM `post` WHERE `my_custom_fk_column` = '1'";
     Tester::check_equal("has_many relation with custom FK name", $expected);
 
@@ -173,8 +173,8 @@
         }
     }
 
-    $book = Model::factory('Book')->find_one(1);
-    $authors = $book->authors()->find_many();
+    $book = Model::factory('Book')->find_first(1);
+    $authors = $book->authors()->find_all();
     $expected = "SELECT `author`.* FROM `author` JOIN `author_book` ON `author`.`id` = `author_book`.`author_id` WHERE `author_book`.`book_id` = '1'";
     Tester::check_equal("has_many_through relation", $expected);
 
@@ -190,8 +190,8 @@
         }
     }
 
-    $book2 = Model::factory('BookTwo')->find_one(1);
-    $authors2 = $book2->authors()->find_many();
+    $book2 = Model::factory('BookTwo')->find_first(1);
+    $authors2 = $book2->authors()->find_all();
     $expected = "SELECT `author_two`.* FROM `author_two` JOIN `wrote_the_book` ON `author_two`.`id` = `wrote_the_book`.`custom_author_id` WHERE `wrote_the_book`.`custom_book_id` = '1'";
     Tester::check_equal("has_many_through relation with custom intermediate model and key names", $expected);
 

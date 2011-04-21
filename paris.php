@@ -52,7 +52,7 @@
     class ORMWrapper extends ORM {
 
         /**
-         * The wrapped find_one and find_many classes will
+         * The wrapped find_first and find_all classes will
          * return an instance or instances of this class.
          */
         protected $_class_name;
@@ -107,21 +107,21 @@
         }
 
         /**
-         * Wrap Idiorm's find_one method to return
+         * Wrap Idiorm's find_first method to return
          * an instance of the class associated with
          * this wrapper instead of the raw ORM class.
          */
-        public function find_one($id=null) {
-            return $this->_create_model_instance(parent::find_one($id));
+        public function find_first($id=null) {
+            return $this->_create_model_instance(parent::find_first($id));
         }
 
         /**
-         * Wrap Idiorm's find_many method to return
+         * Wrap Idiorm's find_all method to return
          * an array of instances of the class associated
          * with this wrapper instead of the raw ORM class.
          */
-        public function find_many() {
-            return array_map(array($this, '_create_model_instance'), parent::find_many());
+        public function find_all() {
+            return array_map(array($this, '_create_model_instance'), parent::find_all());
         }
 
         /**
@@ -222,7 +222,7 @@
          * should exist). This method actually returns a wrapped ORM object
          * which allows a database query to be built. The wrapped ORM object is
          * responsible for returning instances of the correct class when
-         * its find_one or find_many methods are called.
+         * its find_first or find_all methods are called.
          */
         public static function factory($class_name) {
             $table_name = self::_get_table_name($class_name);
@@ -235,7 +235,7 @@
         /**
          * Internal method to construct the queries for both the has_one and
          * has_many methods. These two types of association are identical; the
-         * only difference is whether find_one or find_many is used to complete
+         * only difference is whether find_first or find_all is used to complete
          * the method chain.
          */
         protected function _has_one_or_many($associated_class_name, $foreign_key_name=null) {
